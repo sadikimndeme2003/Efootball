@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#f8f8f7">
+<meta name="description" content="eFootball League Manager">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<title>eFootball League</title>
+<style>
+/* ─── TOKENS ───────────────────────────────────────────── */
+:root {
+  --bg:        #f8f8f7;
+  --surface:   #ffffff;
+  --surface2:  #f3f3f2;
+  --border:    #e5e5e3;
+  --border2:   #d4d4d0;
+  --text:      #1a1a18;
+  --text2:     #6b6b68;
+  --text3:     #a8a8a4;
+  --accent:    #1a1a18;
+  --radius:    10px;
+  --shadow:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.05);
+  --green:     #16a34a;
+  --red:       #dc2626;
+  --amber:     #d97706;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.5;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+select option { background: #fff; color: var(--text); }
+
+/* ─── HEADER ─────────────────────────────────────────────── */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.brand { display: flex; align-items: center; gap: 9px; }
+.brand-icon {
+  width: 30px; height: 30px;
+  background: var(--text);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.brand-name { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
+.brand-name span { color: var(--text2); font-weight: 400; }
+.season-pill {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.season-pill:hover { background: var(--border); }
+
+/* ─── TABS ───────────────────────────────────────────────── */
+.tabs {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  position: sticky;
+  top: 52px;
+  z-index: 49;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 1;
+  min-width: 72px;
+  padding: 11px 6px;
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  letter-spacing: 0.1px;
+}
+.tab.active { color: var(--text); border-bottom-color: var(--text); }
+.tab:hover:not(.active) { color: var(--text2); }
+
+/* ─── CONTENT ────────────────────────────────────────────── */
+.content { max-width: 640px; margin: 0 auto; padding: 16px 14px 100px; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ─── CARD ───────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.card-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text3);
+  margin-bottom: 12px;
+}
+
+/* ─── SCREENSHOT UPLOAD ──────────────────────────────────── */
+.upload-zone {
+  border: 1.5px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 28px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+.upload-zone:hover { border-color: var(--text2); background: var(--surface2); }
+.upload-zone.dragover { border-color: var(--text); background: var(--surface2); }
+.upload-icon {
+  width: 44px; height: 44px;
+  background: var(--surface2);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  margin: 0 auto 10px;
+}
+.upload-label { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.upload-hint { font-size: 12px; color: var(--text3); }
+#fileInput { display: none; }
+
+/* ─── AI READING STATE ───────────────────────────────────── */
+.ai-reading { display: none; text-align: center; padding: 24px 16px; }
+.ai-reading.show { display: block; }
+.spinner {
+  width: 32px; height: 32px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--text);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.ai-reading-text { font-size: 13px; color: var(--text2); }
+
+/* ─── PREVIEW + CONFIRM ──────────────────────────────────── */
+.preview-section { display: none; }
+.preview-section.show { display: block; }
+.screenshot-preview {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  display: block;
+  margin-bottom: 12px;
+}
+.extracted-result {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.result-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.result-team { font-size: 13px; font-weight: 600; }
+.result-team.home { text-align: right; }
+.result-team.away { text-align: left; }
+.result-score {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: 'Courier New', monospace;
+  color: var(--text);
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+.editable-field {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  width: 100%;
+  text-align: center;
+}
+.editable-field:focus { outline: none; border-color: var(--text); }
+.score-inputs { display: flex; align-items: center; gap: 4px; }
+.score-in {
+  width: 44px; height: 44px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  font-size: 22px;
+  font-weight: 900;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  color: var(--text);
+}
+.score-in:focus { outline: none; border-color: var(--text); }
+.score-dash { font-size: 18px; font-weight: 700; color: var(--text3); }
+.round-date-row { display: flex; gap: 8px; margin-bottom: 0; }
+.round-date-row select,
+.round-date-row input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* ─── BUTTONS ────────────────────────────────────────────── */
+.btn {
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn:active { transform: scale(0.98); }
+.btn-black { background: var(--text); color: #fff; }
+.btn-black:hover { opacity: 0.88; }
+.btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+.btn-outline:hover { border-color: var(--text); color: var(--text); }
+.btn-ghost { background: transparent; color: var(--text3); font-size: 12px; padding: 6px 10px; }
+.btn-ghost:hover { color: var(--text); background: var(--surface2); }
+.btn-green { background: var(--green); color: #fff; }
+.btn-green:hover { opacity: 0.88; }
+.btn-full { width: 100%; }
+.btn-row { display: flex; gap: 8px; margin-top: 12px; }
+
+/* ─── MATCH LIST ─────────────────────────────────────────── */
+.section-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.section-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.filter-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.match-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.match-body {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+.m-team { font-size: 13px; font-weight: 600; line-height: 1.3; }
+.m-team.home { text-align: right; }
+.m-team.away { text-align: left; }
+.m-team.winner { color: var(--text); }
+.m-team.loser { color: var(--text3); font-weight: 400; }
+.m-score {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.match-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 7px;
+  font-size: 11px;
+  color: var(--text3);
+}
+.round-tag {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+.del-btn {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: transparent;
+  border: none;
+  color: var(--border2);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.del-btn:hover { color: #c0392b; }
+
+/* ─── QUICK STATS ────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 8px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.stat-val { font-size: 20px; font-weight: 800; font-family: 'Courier New', monospace; color: var(--text); line-height: 1; }
+.stat-lbl { font-size: 9.5px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; font-weight: 500; }
+
+/* ─── STANDINGS ──────────────────────────────────────────── */
+.standings-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+table.standings {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  font-size: 13px;
+}
+table.standings thead th {
+  background: var(--surface2);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text3);
+  padding: 9px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+table.standings thead th:nth-child(2) { text-align: left; padding-left: 10px; }
+table.standings tbody td {
+  padding: 11px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+table.standings tbody td:nth-child(2) { text-align: left; padding-left: 10px; }
+table.standings tbody tr:last-child td { border-bottom: none; }
+table.standings tbody tr:hover td { background: var(--surface2); }
+.rank-n { font-size: 11px; color: var(--text3); font-weight: 600; }
+.rank-n.top1 { color: var(--text); font-weight: 800; }
+.rank-n.top2 { color: var(--text2); font-weight: 700; }
+.rank-n.top3 { color: var(--text2); font-weight: 600; }
+.player-cell { display: flex; align-items: center; gap: 8px; }
+.avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.p-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.top1-row .p-name { font-weight: 700; }
+.pts-col { font-weight: 800; font-size: 15px; color: var(--text); font-family: 'Courier New', monospace; }
+.gd-pos { color: var(--text2); }
+.gd-neg { color: var(--text3); }
+.form-strip { display: flex; gap: 2px; justify-content: center; flex-wrap: nowrap; }
+.fd {
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  font-size: 8.5px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+.fd.W { background: var(--text); color: #fff; }
+.fd.D { background: var(--border2); color: var(--text2); }
+.fd.L { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+
+/* ─── PLAYERS ────────────────────────────────────────────── */
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.p-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.p-details { flex: 1; }
+.p-fullname { font-size: 14px; font-weight: 600; color: var(--text); }
+.p-club { font-size: 11.5px; color: var(--text3); margin-top: 1px; }
+.p-mini-stats { display: flex; gap: 14px; }
+.pms { text-align: center; }
+.pms-val { font-size: 15px; font-weight: 800; font-family: 'Courier New', monospace; color: var(--text); }
+.pms-lbl { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.4px; }
+
+/* ─── FORM INPUTS ────────────────────────────────────────── */
+.input-group { display: flex; gap: 8px; margin-bottom: 10px; }
+.input-group input,
+.input-group select {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.input-group input:focus,
+.input-group select:focus { outline: none; border-color: var(--text); background: var(--surface); }
+.input-group input::placeholder { color: var(--text3); }
+
+/* ─── HISTORY ────────────────────────────────────────────── */
+.history-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s;
+}
+.history-item:hover { border-color: var(--text2); }
+.hist-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+.hist-name { font-size: 14px; font-weight: 600; }
+.hist-date { font-size: 11px; color: var(--text3); }
+.hist-winner { font-size: 13px; font-weight: 500; color: var(--text2); }
+.hist-meta { font-size: 11px; color: var(--text3); }
+
+/* ─── FIXTURE STYLES ─────────────────────────────────────── */
+.fixture-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.fixture-round-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text3);
+  padding: 6px 0 4px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.fixture-round-label:first-child { border-top: none; margin-top: 0; }
+
+.fixture-item {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  position: relative;
+}
+.fixture-item.played {
+  background: var(--surface2);
+  border-color: var(--border);
+}
+.fixture-item.played .fx-team { color: var(--text3); }
+.fx-team {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+}
+.fx-team.home { text-align: right; }
+.fx-team.away { text-align: left; }
+.fx-vs {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 6px;
+  white-space: nowrap;
+}
+.fx-result {
+  font-family: 'Courier New', monospace;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--text);
+  background: var(--text);
+  color: #fff;
+  border-radius: 5px;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+.fx-badge {
+  position: absolute;
+  top: 6px; right: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 1px 5px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+.fx-badge.done { background: #dcfce7; color: var(--green); }
+.fx-badge.pending { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+
+.fixture-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.fixture-empty {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--text3);
+}
+.fixture-empty .empty-ico { font-size: 36px; margin-bottom: 10px; }
+.fixture-empty p { font-size: 13px; line-height: 1.6; }
+
+.tab-filter-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.tab-pill {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tab-pill.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+/* ─── MODAL ──────────────────────────────────────────────── */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 200;
+  align-items: flex-end;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 18px 18px 0 0;
+  border-top: 1px solid var(--border);
+  width: 100%;
+  max-height: 82dvh;
+  overflow-y: auto;
+  padding: 0 16px 40px;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+}
+.modal-drag {
+  width: 36px; height: 4px;
+  background: var(--border2);
+  border-radius: 2px;
+  margin: 12px auto 16px;
+}
+.modal-heading { font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+.close-x {
+  float: right;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 28px; height: 28px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1;
+}
+.close-x:hover { background: var(--border); }
+
+/* ─── TOAST ──────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--text);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 24px;
+  z-index: 9999;
+  transition: transform 0.25s ease;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ─── EMPTY STATE ────────────────────────────────────────── */
+.empty { text-align: center; padding: 36px 20px; color: var(--text3); }
+.empty-ico { font-size: 40px; margin-bottom: 10px; }
+.empty p { font-size: 13.5px; line-height: 1.6; }
+
+/* ─── AI ERROR BOX ────────────────────────────────────────── */
+.ai-error {
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #991b1b;
+  margin-bottom: 10px;
+  display: none;
+}
+.ai-error.show { display: block; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">⚽</div>
+      <div class="brand-name">eFootball <span>League</span></div>
+    </div>
+    <div class="season-pill" id="seasonPill" onclick="openSeasonInfo()">Msimu 1</div>
+  </div>
+</header>
+
+<!-- TABS: Jedwali kwanza -->
+<nav class="tabs" id="tabsNav">
+  <div class="tab active" data-tab="jedwali">🏆 Jedwali</div>
+  <div class="tab" data-tab="fixture">📅 Ratiba</div>
+  <div class="tab" data-tab="matokeo">📋 Matokeo</div>
+  <div class="tab" data-tab="wachezaji">👤 Wachezaji</div>
+  <div class="tab" data-tab="historia">📚 Historia</div>
+</nav>
+
+<div class="content">
+
+  <!-- ══════════════════════════════════════════
+       PAGE: JEDWALI (default/first)
+  ══════════════════════════════════════════════ -->
+  <div class="page active" id="page-jedwali">
+
+    <!-- Mini stats for standings page -->
+    <div class="stats-grid" style="margin-bottom:12px">
+      <div class="stat-box"><div class="stat-val" id="jPlayers">0</div><div class="stat-lbl">Wachezaji</div></div>
+      <div class="stat-box"><div class="stat-val" id="jMatches">0</div><div class="stat-lbl">Mechi</div></div>
+      <div class="stat-box"><div class="stat-val" id="jGoals">0</div><div class="stat-lbl">Magoli</div></div>
+      <div class="stat-box"><div class="stat-val" id="jProgress">0%</div><div class="stat-lbl">Imali</div></div>
+    </div>
+
+    <div class="standings-wrap">
+      <table class="standings">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Mchezaji</th>
+            <th>P</th>
+            <th>W</th>
+            <th>D</th>
+            <th>L</th>
+            <th>GF</th>
+            <th>GA</th>
+            <th>GD</th>
+            <th>PTS</th>
+            <th>Fomu</th>
+          </tr>
+        </thead>
+        <tbody id="standingsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PAGE: RATIBA / FIXTURE
+  ══════════════════════════════════════════════ -->
+  <div class="page" id="page-fixture">
+
+    <!-- Generate fixtures card -->
+    <div class="card" id="fixtureGenCard">
+      <div class="card-label">🗓️ Tengeneza Ratiba ya Ligi</div>
+      <p style="font-size:12.5px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+        Mfumo: <strong>Home &amp; Away</strong> — kila mchezaji atacheza <strong>nyumbani</strong> na <strong>mgeni</strong> dhidi ya kila mchezaji mwingine. Raundi 2 (Kurudi). Jumla ya mechi: n×(n−1).
+      </p>
+      <div class="fixture-stats" id="fixturePreviewStats" style="display:none"></div>
+      <button class="btn btn-black btn-full" onclick="generateFixtures()" id="btnGenerate">
+        🎲 Tengeneza Ratiba Sasa
+      </button>
+      <button class="btn btn-outline btn-full" style="margin-top:8px;color:#c0392b;border-color:#fecaca;display:none" id="btnClearFixtures" onclick="clearFixtures()">
+        🗑️ Futa Ratiba
+      </button>
+    </div>
+
+    <!-- Filter pills -->
+    <div class="tab-filter-row" id="fixturePills" style="display:none">
+      <div class="tab-pill active" data-fpill="all" onclick="setFixturePill(this,'all')">Zote</div>
+      <div class="tab-pill" data-fpill="pending" onclick="setFixturePill(this,'pending')">⏳ Inayokuja</div>
+      <div class="tab-pill" data-fpill="played" onclick="setFixturePill(this,'played')">✅ Zilizopigwa</div>
+      <div class="tab-pill" data-fpill="r1" onclick="setFixturePill(this,'r1')">Raundi 1</div>
+      <div class="tab-pill" data-fpill="r2" onclick="setFixturePill(this,'r2')">Raundi 2</div>
+    </div>
+
+    <div id="fixtureList"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PAGE: MATOKEO
+  ══════════════════════════════════════════════ -->
+  <div class="page" id="page-matokeo">
+
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-val" id="sMatches">0</div><div class="stat-lbl">Mechi</div></div>
+      <div class="stat-box"><div class="stat-val" id="sGoals">0</div><div class="stat-lbl">Magoli</div></div>
+      <div class="stat-box"><div class="stat-val" id="sAvg">0.0</div><div class="stat-lbl">Goli/Mechi</div></div>
+      <div class="stat-box"><div class="stat-val" id="sRound">R1</div><div class="stat-lbl">Raundi</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">📸 Ingiza Matokeo kwa Screenshot</div>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">📷</div>
+        <div class="upload-label">Pakia Screenshot ya Mechi</div>
+        <div class="upload-hint">Bonyeza hapa au drag &amp; drop picha ya matokeo</div>
+        <input type="file" id="fileInput" accept="image/*" capture="environment">
+      </div>
+      <div class="ai-reading" id="aiReading">
+        <div class="spinner"></div>
+        <div class="ai-reading-text">AI inasoma screenshot…<br><small style="color:var(--text3)">Inatafuta timu, matokeo na maelezo</small></div>
+      </div>
+      <div class="ai-error" id="aiError"></div>
+      <div class="preview-section" id="previewSection">
+        <img id="screenshotImg" class="screenshot-preview" src="" alt="Screenshot">
+        <div class="card-label" style="margin-bottom:8px">Matokeo Yaliyosomwa — Angalia na Uhakikishe</div>
+        <div class="extracted-result">
+          <div class="result-row">
+            <div class="team-selector">
+              <input class="editable-field" id="ex_home" placeholder="Timu Nyumbani" autocomplete="off">
+            </div>
+            <div class="score-inputs">
+              <input type="number" class="score-in" id="ex_hs" min="0" max="99" inputmode="numeric" value="0">
+              <span class="score-dash">–</span>
+              <input type="number" class="score-in" id="ex_as" min="0" max="99" inputmode="numeric" value="0">
+            </div>
+            <div class="team-selector">
+              <input class="editable-field" id="ex_away" placeholder="Timu Mgeni" autocomplete="off">
+            </div>
+          </div>
+          <div class="round-date-row">
+            <input type="date" id="ex_date">
+            <select id="ex_round">
+              <option value="1">Raundi 1</option><option value="2">Raundi 2</option>
+              <option value="3">Raundi 3</option><option value="4">Raundi 4</option>
+              <option value="5">Raundi 5</option><option value="6">Raundi 6</option>
+              <option value="7">Raundi 7</option><option value="8">Raundi 8</option>
+              <option value="9">Raundi 9</option><option value="10">Raundi 10</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-black btn-full" onclick="confirmMatch()">✅ Hifadhi Mechi</button>
+          <button class="btn btn-outline" onclick="resetUpload()">✕ Futa</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-bar">
+      <div class="section-title">Mechi Zilizopigwa</div>
+      <select class="filter-select" id="filterRound" onchange="renderMatches()">
+        <option value="all">Zote</option>
+      </select>
+    </div>
+    <div id="matchList"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PAGE: WACHEZAJI
+  ══════════════════════════════════════════════ -->
+  <div class="page" id="page-wachezaji">
+    <div class="card">
+      <div class="card-label">Ongeza Mchezaji</div>
+      <div class="input-group">
+        <input type="text" id="pName" placeholder="Jina la mchezaji" maxlength="30">
+        <input type="text" id="pClub" placeholder="Timu ya eFootball" maxlength="30">
+      </div>
+      <div class="input-group">
+        <input type="text" id="pEmoji" placeholder="Emoji" maxlength="2" style="flex:0;width:56px;text-align:center">
+        <input type="number" id="pRating" placeholder="Rating (1–99)" min="1" max="99">
+      </div>
+      <button class="btn btn-black btn-full" onclick="addPlayer()">Ongeza Mchezaji</button>
+    </div>
+    <div class="section-bar"><div class="section-title">Wachezaji Wote</div></div>
+    <div id="playerList"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PAGE: HISTORIA
+  ══════════════════════════════════════════════ -->
+  <div class="page" id="page-historia">
+    <div class="card">
+      <div class="card-label">Anza Msimu Mpya</div>
+      <div class="input-group">
+        <input type="text" id="newSeasonName" placeholder="Jina la msimu (mfano: Msimu 2025/26)">
+      </div>
+      <button class="btn btn-black btn-full" onclick="startNewSeason()">🚀 Anza Msimu Mpya</button>
+    </div>
+    <div class="section-bar" style="margin-top:4px"><div class="section-title">Misimu Iliyopita</div></div>
+    <div id="historyList"></div>
+  </div>
+
+</div><!-- /content -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL: Season Info -->
+<div class="overlay" id="seasonModal" onclick="closeOverlay(event,'seasonModal')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <button class="close-x" onclick="closeModal('seasonModal')">✕</button>
+    <div class="modal-heading" id="sModalTitle">Msimu wa Sasa</div>
+    <div id="sModalBody"></div>
+  </div>
+</div>
+
+<!-- MODAL: History Detail -->
+<div class="overlay" id="histModal" onclick="closeOverlay(event,'histModal')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <button class="close-x" onclick="closeModal('histModal')">✕</button>
+    <div id="histModalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════ */
+let S = {
+  season: 1,
+  seasonName: 'Msimu 1',
+  players: [],
+  matches: [],
+  history: [],
+  fixtures: []   // { id, season, round, leg, home, away }
+};
+
+/* ════════════════════════════════════════════════
+   STORAGE
+════════════════════════════════════════════════ */
+const SKEY = 'efbl2_state';
+function save() { localStorage.setItem(SKEY, JSON.stringify(S)); }
+function load() {
+  const r = localStorage.getItem(SKEY);
+  if (r) { try { S = JSON.parse(r); if (!S.fixtures) S.fixtures = []; } catch(e){} }
+  document.getElementById('ex_date').value = today();
+}
+function today() { return new Date().toISOString().split('T')[0]; }
+
+/* ════════════════════════════════════════════════
+   TABS
+════════════════════════════════════════════════ */
+document.getElementById('tabsNav').addEventListener('click', e => {
+  const tab = e.target.closest('[data-tab]');
+  if (!tab) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  const name = tab.dataset.tab;
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'jedwali') renderStandings();
+  if (name === 'fixture') renderFixturePage();
+  if (name === 'wachezaji') renderPlayers();
+  if (name === 'historia') renderHistory();
+  if (name === 'matokeo') { renderMatches(); updateStats(); }
+});
+
+/* ════════════════════════════════════════════════
+   SCREENSHOT + AI
+════════════════════════════════════════════════ */
+const fileInput = document.getElementById('fileInput');
+const uploadZone = document.getElementById('uploadZone');
+
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) processImage(file);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) processImage(e.target.files[0]);
+  fileInput.value = '';
+});
+
+function processImage(file) {
+  uploadZone.style.display = 'none';
+  showAIReading(true);
+  hideError();
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    const base64 = ev.target.result.split(',')[1];
+    const mimeType = file.type || 'image/jpeg';
+    document.getElementById('screenshotImg').src = ev.target.result;
+    try {
+      const result = await askClaudeToReadScreenshot(base64, mimeType);
+      showAIReading(false);
+      populateExtracted(result);
+    } catch(err) {
+      showAIReading(false);
+      showError('Hitilafu: ' + err.message + '\n\nJaza matokeo mwenyewe hapa chini.');
+      populateExtracted({ home: '', away: '', homeScore: 0, awayScore: 0 });
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function askClaudeToReadScreenshot(base64data, mimeType) {
+  const prompt = `You are reading a screenshot from an eFootball (Konami) video game match result screen.
+Extract EXACTLY:
+1. home_team: The name of the home team (left side usually)
+2. away_team: The name of the away team (right side usually)
+3. home_score: The home team's final score (integer)
+4. away_score: The away team's final score (integer)
+Respond ONLY with valid JSON, no markdown, no explanation:
+{"home_team":"TeamA","away_team":"TeamB","home_score":2,"away_score":1}
+If team names are not visible, use "Timu ya Nyumbani" and "Timu ya Mgeni".`;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 200,
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64data } },
+        { type: 'text', text: prompt }
+      ]}]
+    })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'API ilikataa ombi');
+  }
+  const data = await response.json();
+  const text = data.content?.map(c => c.text || '').join('') || '';
+  const cleaned = text.replace(/```json|```/gi, '').trim();
+  let parsed;
+  try { parsed = JSON.parse(cleaned); }
+  catch(e) {
+    const match = text.match(/\{[^}]+\}/);
+    if (match) parsed = JSON.parse(match[0]);
+    else throw new Error('AI haikuweza kusoma matokeo kutoka screenshot hii');
+  }
+  return { home: parsed.home_team||'', away: parsed.away_team||'', homeScore: parseInt(parsed.home_score)||0, awayScore: parseInt(parsed.away_score)||0 };
+}
+
+function populateExtracted(result) {
+  document.getElementById('ex_home').value = result.home || '';
+  document.getElementById('ex_away').value = result.away || '';
+  document.getElementById('ex_hs').value = result.homeScore ?? 0;
+  document.getElementById('ex_as').value = result.awayScore ?? 0;
+  document.getElementById('ex_date').value = today();
+  const maxRound = currentRound();
+  document.getElementById('ex_round').value = maxRound;
+  document.getElementById('previewSection').classList.add('show');
+}
+
+function currentRound() {
+  const rounds = S.matches.filter(m => m.season === S.season).map(m => m.round);
+  return rounds.length > 0 ? Math.max(...rounds) : 1;
+}
+
+function confirmMatch() {
+  const home = document.getElementById('ex_home').value.trim();
+  const away = document.getElementById('ex_away').value.trim();
+  const hs = parseInt(document.getElementById('ex_hs').value);
+  const as_ = parseInt(document.getElementById('ex_as').value);
+  const date = document.getElementById('ex_date').value;
+  const round = parseInt(document.getElementById('ex_round').value);
+  if (!home || !away) { toast('⚠️ Jaza majina ya timu zote mbili'); return; }
+  if (home === away) { toast('⚠️ Timu ziwe tofauti'); return; }
+  S.matches.push({ id: Date.now(), season: S.season, round, date, home, away, homeScore: hs, awayScore: as_ });
+  save();
+  resetUpload();
+  renderMatches();
+  updateStats();
+  toast(`✅ ${home} ${hs}–${as_} ${away} imehifadhiwa`);
+}
+
+function resetUpload() {
+  uploadZone.style.display = '';
+  document.getElementById('aiReading').classList.remove('show');
+  document.getElementById('previewSection').classList.remove('show');
+  hideError();
+  fileInput.value = '';
+}
+function showAIReading(v) { document.getElementById('aiReading').classList.toggle('show', v); }
+function showError(msg) { const el=document.getElementById('aiError'); el.textContent=msg; el.classList.add('show'); }
+function hideError() { document.getElementById('aiError').classList.remove('show'); }
+
+/* ════════════════════════════════════════════════
+   MATCH LIST
+════════════════════════════════════════════════ */
+function renderMatches() {
+  const fr = document.getElementById('filterRound').value;
+  let ms = S.matches.filter(m => m.season === S.season);
+  if (fr !== 'all') ms = ms.filter(m => m.round == fr);
+  ms = ms.sort((a,b) => b.id - a.id);
+
+  const rounds = [...new Set(S.matches.filter(m=>m.season===S.season).map(m=>m.round))].sort((a,b)=>a-b);
+  const fe = document.getElementById('filterRound');
+  const cv = fe.value;
+  fe.innerHTML = '<option value="all">Zote</option>' +
+    rounds.map(r => `<option value="${r}" ${cv==r?'selected':''}>Raundi ${r}</option>`).join('');
+
+  const el = document.getElementById('matchList');
+  if (ms.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-ico">📋</div><p>Hakuna mechi bado.<br>Pakia screenshot ya mechi yako ya kwanza!</p></div>`;
+    return;
+  }
+  el.innerHTML = ms.map(m => {
+    const hs = m.homeScore, as_ = m.awayScore;
+    const hw = hs > as_, aw = as_ > hs;
+    return `<div class="match-item">
+      <button class="del-btn" onclick="delMatch(${m.id})">✕</button>
+      <div class="match-body">
+        <div class="m-team home ${hw?'winner':aw?'loser':''}">${m.home}</div>
+        <div class="m-score">${hs} – ${as_}</div>
+        <div class="m-team away ${aw?'winner':hw?'loser':''}">${m.away}</div>
+      </div>
+      <div class="match-foot">
+        <span>${m.date||'—'}</span>
+        <span class="round-tag">Raundi ${m.round}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function delMatch(id) {
+  if (!confirm('Futa mechi hii?')) return;
+  S.matches = S.matches.filter(m => m.id !== id);
+  save(); renderMatches(); updateStats();
+  toast('Mechi imefutwa');
+}
+
+function updateStats() {
+  const ms = S.matches.filter(m => m.season === S.season);
+  const goals = ms.reduce((s,m) => s + m.homeScore + m.awayScore, 0);
+  const maxR = ms.length ? Math.max(...ms.map(m=>m.round)) : 1;
+  document.getElementById('sMatches').textContent = ms.length;
+  document.getElementById('sGoals').textContent = goals;
+  document.getElementById('sAvg').textContent = ms.length ? (goals/ms.length).toFixed(1) : '0.0';
+  document.getElementById('sRound').textContent = 'R'+maxR;
+}
+
+/* ════════════════════════════════════════════════
+   STANDINGS
+════════════════════════════════════════════════ */
+function renderStandings() {
+  const ms = S.matches.filter(m => m.season === S.season);
+  const tbl = {};
+
+  S.players.forEach(p => {
+    tbl[p.name] = { name:p.name, emoji:p.emoji||'🎮', P:0,W:0,D:0,L:0,GF:0,GA:0, form:[] };
+  });
+
+  const sorted = [...ms].sort((a,b) => a.id - b.id);
+  sorted.forEach(m => {
+    const hs = m.homeScore, as_ = m.awayScore;
+    if (!tbl[m.home]) tbl[m.home] = { name:m.home, emoji:'🎮', P:0,W:0,D:0,L:0,GF:0,GA:0, form:[] };
+    if (!tbl[m.away]) tbl[m.away] = { name:m.away, emoji:'🎮', P:0,W:0,D:0,L:0,GF:0,GA:0, form:[] };
+    const h = tbl[m.home], a = tbl[m.away];
+    h.P++; a.P++; h.GF+=hs; h.GA+=as_; a.GF+=as_; a.GA+=hs;
+    if (hs>as_) { h.W++; a.L++; h.form.push('W'); a.form.push('L'); }
+    else if (hs<as_) { a.W++; h.L++; a.form.push('W'); h.form.push('L'); }
+    else { h.D++; a.D++; h.form.push('D'); a.form.push('D'); }
+  });
+
+  const rows = Object.values(tbl)
+    .map(t => ({...t, GD:t.GF-t.GA, PTS:t.W*3+t.D}))
+    .sort((a,b) => b.PTS-a.PTS || b.GD-a.GD || b.GF-a.GF);
+
+  const tbody = document.getElementById('standingsBody');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:24px;font-size:13px">Bado hakuna mechi kwenye msimu huu</td></tr>`;
+  } else {
+    tbody.innerHTML = rows.map((t,i) => {
+      const rc = i===0?'top1':i===1?'top2':i===2?'top3':'';
+      const form = t.form.slice(-5).map(f=>`<div class="fd ${f}">${f}</div>`).join('');
+      const gdStr = t.GD>0?`+${t.GD}`:String(t.GD);
+      const gdClass = t.GD>0?'gd-pos':t.GD<0?'gd-neg':'';
+      return `<tr class="${i===0?'top1-row':''}">
+        <td><span class="rank-n ${rc}">${i+1}</span></td>
+        <td><div class="player-cell"><div class="avatar">${t.emoji}</div><span class="p-name">${t.name}</span></div></td>
+        <td>${t.P}</td><td>${t.W}</td><td>${t.D}</td><td>${t.L}</td>
+        <td>${t.GF}</td><td>${t.GA}</td>
+        <td class="${gdClass}">${gdStr}</td>
+        <td class="pts-col">${t.PTS}</td>
+        <td><div class="form-strip">${form}</div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Update jedwali stats
+  const totalGoals = ms.reduce((s,m) => s + m.homeScore + m.awayScore, 0);
+  const totalFix = S.fixtures.filter(f=>f.season===S.season).length;
+  const pct = totalFix > 0 ? Math.round((ms.length / totalFix)*100) : (ms.length > 0 ? 100 : 0);
+  document.getElementById('jPlayers').textContent = S.players.length;
+  document.getElementById('jMatches').textContent = ms.length;
+  document.getElementById('jGoals').textContent = totalGoals;
+  document.getElementById('jProgress').textContent = pct + '%';
+}
+
+/* ════════════════════════════════════════════════
+   FIXTURE GENERATOR
+════════════════════════════════════════════════ */
+let fixturePillFilter = 'all';
+
+function setFixturePill(el, val) {
+  document.querySelectorAll('.tab-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  fixturePillFilter = val;
+  renderFixtureList();
+}
+
+/* Round-robin algorithm: generates all pairs */
+function generateRoundRobin(players) {
+  const n = players.length;
+  const list = [...players];
+  // If odd number, add dummy bye
+  if (n % 2 !== 0) list.push({ id: -1, name: '__BYE__' });
+  const m = list.length;
+  const rounds = m - 1;
+  const halfM = m / 2;
+  const fixtures = [];
+
+  // Pin first player, rotate rest
+  const arr = list.slice(1);
+  for (let r = 0; r < rounds; r++) {
+    const round = [];
+    const first = list[0];
+    const second = arr[r % arr.length];
+    // match first vs second
+    round.push([first, second]);
+    for (let i = 1; i < halfM; i++) {
+      const a = arr[(r + i) % arr.length];
+      const b = arr[(r + arr.length - i) % arr.length];
+      round.push([a, b]);
+    }
+    fixtures.push(round);
+  }
+  return fixtures; // array of rounds, each round = array of [home, away] pairs
+}
+
+function generateFixtures() {
+  const players = S.players;
+  if (players.length < 2) { toast('⚠️ Ongeza angalau wachezaji 2 kwanza'); return; }
+  if (S.fixtures.filter(f=>f.season===S.season).length > 0) {
+    if (!confirm('Ratiba tayari ipo. Futa na utengeneze upya?')) return;
+    S.fixtures = S.fixtures.filter(f => f.season !== S.season);
+  }
+
+  const round1 = generateRoundRobin(players);
+  let fixtureId = Date.now();
+  let roundNum = 1;
+
+  round1.forEach(roundMatches => {
+    roundMatches.forEach(([home, away]) => {
+      if (home.id === -1 || away.id === -1) return; // skip bye
+      S.fixtures.push({
+        id: fixtureId++,
+        season: S.season,
+        leg: 1,
+        round: roundNum,
+        home: home.name,
+        away: away.name
+      });
+    });
+    roundNum++;
+  });
+
+  // Round 2 = reverse home/away of round 1 (leg 2)
+  const r1Count = roundNum - 1;
+  round1.forEach(roundMatches => {
+    roundMatches.forEach(([home, away]) => {
+      if (home.id === -1 || away.id === -1) return;
+      S.fixtures.push({
+        id: fixtureId++,
+        season: S.season,
+        leg: 2,
+        round: roundNum,
+        home: away.name,  // swapped!
+        away: home.name
+      });
+    });
+    roundNum++;
+  });
+
+  save();
+  toast(`✅ Ratiba imetengenezwa! Mechi ${S.fixtures.filter(f=>f.season===S.season).length} kwa raundi ${roundNum-1}`);
+  renderFixturePage();
+}
+
+function clearFixtures() {
+  if (!confirm('Futa ratiba yote ya msimu huu?')) return;
+  S.fixtures = S.fixtures.filter(f => f.season !== S.season);
+  save();
+  renderFixturePage();
+  toast('Ratiba imefutwa');
+}
+
+function getMatchForFixture(fx) {
+  // Find played match matching this fixture (home & away names, same season)
+  return S.matches.find(m =>
+    m.season === fx.season &&
+    m.home.toLowerCase() === fx.home.toLowerCase() &&
+    m.away.toLowerCase() === fx.away.toLowerCase()
+  );
+}
+
+function renderFixturePage() {
+  const seasonFix = S.fixtures.filter(f => f.season === S.season);
+  const genCard = document.getElementById('fixtureGenCard');
+  const pills = document.getElementById('fixturePills');
+  const clearBtn = document.getElementById('btnClearFixtures');
+  const genBtn = document.getElementById('btnGenerate');
+  const previewStats = document.getElementById('fixturePreviewStats');
+
+  if (seasonFix.length === 0) {
+    pills.style.display = 'none';
+    clearBtn.style.display = 'none';
+    genCard.style.display = 'block';
+    previewStats.style.display = 'none';
+    genBtn.textContent = '🎲 Tengeneza Ratiba Sasa';
+
+    // Show preview of what will be generated
+    if (S.players.length >= 2) {
+      const n = S.players.length;
+      const totalGames = n * (n - 1);
+      const legs = 2;
+      const rounds = (n % 2 === 0 ? n - 1 : n) * legs;
+      previewStats.style.display = 'grid';
+      previewStats.innerHTML = `
+        <div class="stat-box"><div class="stat-val">${n}</div><div class="stat-lbl">Wachezaji</div></div>
+        <div class="stat-box"><div class="stat-val">${totalGames}</div><div class="stat-lbl">Mechi Zote</div></div>
+        <div class="stat-box"><div class="stat-val">${rounds}</div><div class="stat-lbl">Raundi</div></div>`;
+    }
+    document.getElementById('fixtureList').innerHTML = '';
+    return;
+  }
+
+  genCard.style.display = 'block';
+  pills.style.display = 'flex';
+  clearBtn.style.display = 'block';
+  genBtn.textContent = '🔄 Tengeneza Upya';
+
+  renderFixtureList();
+}
+
+function renderFixtureList() {
+  const seasonFix = S.fixtures.filter(f => f.season === S.season);
+  const el = document.getElementById('fixtureList');
+
+  let filtered = seasonFix;
+  if (fixturePillFilter === 'pending') filtered = seasonFix.filter(f => !getMatchForFixture(f));
+  else if (fixturePillFilter === 'played') filtered = seasonFix.filter(f => !!getMatchForFixture(f));
+  else if (fixturePillFilter === 'r1') filtered = seasonFix.filter(f => f.leg === 1);
+  else if (fixturePillFilter === 'r2') filtered = seasonFix.filter(f => f.leg === 2);
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="fixture-empty"><div class="empty-ico">📅</div><p>Hakuna mechi ${fixturePillFilter==='played'?'zilizopigwa':fixturePillFilter==='pending'?'zinazokuja':''} hapa</p></div>`;
+    return;
+  }
+
+  // Group by round
+  const byRound = {};
+  filtered.forEach(f => {
+    if (!byRound[f.round]) byRound[f.round] = [];
+    byRound[f.round].push(f);
+  });
+
+  const rounds = Object.keys(byRound).map(Number).sort((a,b)=>a-b);
+  let html = '';
+  rounds.forEach(r => {
+    const fx = byRound[r];
+    const leg = fx[0]?.leg || 1;
+    html += `<div class="fixture-round-label">Raundi ${r} &nbsp;·&nbsp; ${leg===1?'Kwenda 🏠':'Kurudi ✈️'}</div>`;
+    fx.forEach(f => {
+      const match = getMatchForFixture(f);
+      const played = !!match;
+      html += `<div class="fixture-item ${played?'played':''}">
+        <span class="fx-badge ${played?'done':'pending'}">${played?'✓ Imepigwa':'Inakuja'}</span>
+        <div class="fx-team home">${f.home}</div>
+        ${played
+          ? `<div class="fx-result">${match.homeScore}–${match.awayScore}</div>`
+          : `<div class="fx-vs">VS</div>`
+        }
+        <div class="fx-team away">${f.away}</div>
+      </div>`;
+    });
+  });
+
+  // Summary
+  const played = seasonFix.filter(f => !!getMatchForFixture(f)).length;
+  const total = seasonFix.length;
+  html += `<div style="text-align:center;font-size:11.5px;color:var(--text3);padding:12px 0 4px">
+    ✅ ${played} / ${total} mechi zimepigwa
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+/* ════════════════════════════════════════════════
+   PLAYERS
+════════════════════════════════════════════════ */
+function addPlayer() {
+  const name = document.getElementById('pName').value.trim();
+  const club = document.getElementById('pClub').value.trim();
+  const emoji = document.getElementById('pEmoji').value.trim() || '🎮';
+  const rating = parseInt(document.getElementById('pRating').value) || 75;
+  if (!name||!club) { toast('⚠️ Jaza jina na timu'); return; }
+  if (S.players.find(p=>p.name.toLowerCase()===name.toLowerCase())) { toast('⚠️ Mchezaji tayari yupo'); return; }
+  S.players.push({ id:Date.now(), name, club, emoji, rating });
+  save(); renderPlayers();
+  ['pName','pClub','pEmoji','pRating'].forEach(id => document.getElementById(id).value='');
+  toast('✅ '+name+' ameongezwa');
+}
+
+function delPlayer(id) {
+  if (!confirm('Futa mchezaji?')) return;
+  S.players = S.players.filter(p=>p.id!==id);
+  save(); renderPlayers(); toast('Mchezaji amefutwa');
+}
+
+function getStats(name) {
+  let P=0,W=0,D=0,L=0,GF=0,GA=0;
+  S.matches.filter(m=>m.season===S.season).forEach(m => {
+    const hs=m.homeScore, as_=m.awayScore;
+    const isH=m.home===name, isA=m.away===name;
+    if(!isH&&!isA) return; P++;
+    if(isH){GF+=hs;GA+=as_;if(hs>as_)W++;else if(hs===as_)D++;else L++;}
+    if(isA){GF+=as_;GA+=hs;if(as_>hs)W++;else if(as_===hs)D++;else L++;}
+  });
+  return {P,W,D,L,GF,GA,PTS:W*3+D};
+}
+
+function renderPlayers() {
+  const el = document.getElementById('playerList');
+  if (!S.players.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-ico">👤</div><p>Ongeza wachezaji kwanza</p></div>`;
+    return;
+  }
+  el.innerHTML = S.players.map(p => {
+    const s = getStats(p.name);
+    return `<div class="player-row">
+      <div class="p-avatar">${p.emoji}</div>
+      <div class="p-details">
+        <div class="p-fullname">${p.name}</div>
+        <div class="p-club">⚽ ${p.club} &nbsp;·&nbsp; ⭐ ${p.rating}</div>
+      </div>
+      <div class="p-mini-stats">
+        <div class="pms"><div class="pms-val">${s.P}</div><div class="pms-lbl">P</div></div>
+        <div class="pms"><div class="pms-val">${s.W}</div><div class="pms-lbl">W</div></div>
+        <div class="pms"><div class="pms-val">${s.PTS}</div><div class="pms-lbl">Pts</div></div>
+      </div>
+      <button class="del-btn" onclick="delPlayer(${p.id})" style="top:10px">✕</button>
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════════
+   HISTORY
+════════════════════════════════════════════════ */
+function computeStandings(seasonId) {
+  const ms = S.matches.filter(m=>m.season===seasonId);
+  const tbl = {};
+  ms.forEach(m => {
+    [m.home,m.away].forEach(n=>{if(!tbl[n])tbl[n]={name:n,P:0,W:0,D:0,L:0,GF:0,GA:0};});
+    const hs=m.homeScore,as_=m.awayScore;
+    const h=tbl[m.home],a=tbl[m.away];
+    h.P++;a.P++;h.GF+=hs;h.GA+=as_;a.GF+=as_;a.GA+=hs;
+    if(hs>as_){h.W++;a.L++;}else if(hs<as_){a.W++;h.L++;}else{h.D++;a.D++;}
+  });
+  return Object.values(tbl).map(t=>({...t,GD:t.GF-t.GA,PTS:t.W*3+t.D}))
+    .sort((a,b)=>b.PTS-a.PTS||b.GD-a.GD||b.GF-a.GF);
+}
+
+function startNewSeason() {
+  const name = document.getElementById('newSeasonName').value.trim() || `Msimu ${S.season+1}`;
+  if (!confirm(`Anza "${name}"?\nMatokeo ya msimu wa sasa yatakaa kwenye historia.`)) return;
+  const ms = S.matches.filter(m=>m.season===S.season);
+  if (ms.length) {
+    const standings = computeStandings(S.season);
+    S.history.push({
+      season: S.season, name: S.seasonName,
+      endDate: today(), matches: ms.length,
+      winner: standings[0]?.name || null,
+      top5: standings.slice(0,5)
+    });
+  }
+  S.season++; S.seasonName = name;
+  document.getElementById('seasonPill').textContent = name;
+  document.getElementById('newSeasonName').value = '';
+  save(); renderHistory(); toast('🚀 '+name+' imeanza!');
+}
+
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (!S.history.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-ico">📚</div><p>Bado hakuna misimu iliyokamilika</p></div>`;
+    return;
+  }
+  el.innerHTML = [...S.history].reverse().map(h => `
+  <div class="history-item" onclick="showHistDetail(${h.season})">
+    <div class="hist-top">
+      <div class="hist-name">${h.name}</div>
+      <div class="hist-date">${h.endDate}</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="hist-winner">${h.winner ? '🏆 '+h.winner : '—'}</div>
+      <div class="hist-meta">${h.matches} mechi ›</div>
+    </div>
+  </div>`).join('');
+}
+
+function showHistDetail(seasonId) {
+  const h = S.history.find(x=>x.season===seasonId);
+  if (!h) return;
+  const rows = (h.top5||[]).map((s,i)=>`
+  <tr>
+    <td style="padding:8px 6px;font-size:12px;color:var(--text3)">${i+1}</td>
+    <td style="padding:8px 6px;font-size:13px;font-weight:500">${s.name}</td>
+    <td style="padding:8px 6px;text-align:center;font-size:12px">${s.P}</td>
+    <td style="padding:8px 6px;text-align:center;font-size:12px">${s.W}</td>
+    <td style="padding:8px 6px;text-align:center;font-size:12px">${s.L}</td>
+    <td style="padding:8px 6px;text-align:center;font-weight:800;font-family:monospace">${s.PTS}</td>
+  </tr>`).join('');
+  document.getElementById('histModalBody').innerHTML = `
+    <button class="close-x" onclick="closeModal('histModal')">✕</button>
+    <div class="modal-heading">${h.name}</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
+      ${h.winner?`🏆 Mshindi: <strong>${h.winner}</strong><br>`:''}
+      📅 ${h.endDate} &nbsp;·&nbsp; ⚽ ${h.matches} mechi
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:8px">Top 5 Jedwali la Mwisho</div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="padding:6px;font-size:10px;color:var(--text3)">#</th>
+        <th style="padding:6px;font-size:10px;color:var(--text3);text-align:left">Mchezaji</th>
+        <th style="padding:6px;font-size:10px;color:var(--text3)">P</th>
+        <th style="padding:6px;font-size:10px;color:var(--text3)">W</th>
+        <th style="padding:6px;font-size:10px;color:var(--text3)">L</th>
+        <th style="padding:6px;font-size:10px;color:var(--text3)">PTS</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  document.getElementById('histModal').classList.add('open');
+}
+
+/* ════════════════════════════════════════════════
+   SEASON INFO MODAL
+════════════════════════════════════════════════ */
+function openSeasonInfo() {
+  const ms = S.matches.filter(m=>m.season===S.season);
+  document.getElementById('sModalTitle').textContent = S.seasonName;
+  document.getElementById('sModalBody').innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+    <div class="stat-box"><div class="stat-val">${S.players.length}</div><div class="stat-lbl">Wachezaji</div></div>
+    <div class="stat-box"><div class="stat-val">${ms.length}</div><div class="stat-lbl">Mechi</div></div>
+    <div class="stat-box"><div class="stat-val">${S.history.length}</div><div class="stat-lbl">Misimu</div></div>
+  </div>
+  <button class="btn btn-outline btn-full" style="margin-bottom:8px;color:#c0392b;border-color:#fecaca"
+    onclick="if(confirm('Futa DATA YOTE kabisa? Haiwezekani kurejesha!')){localStorage.clear();location.reload()}">
+    🗑️ Futa Data Yote
+  </button>`;
+  document.getElementById('seasonModal').classList.add('open');
+}
+
+/* ════════════════════════════════════════════════
+   MODAL HELPERS
+════════════════════════════════════════════════ */
+function closeOverlay(e, id) { if(e.target===e.currentTarget) closeModal(id); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════ */
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ════════════════════════════════════════════════
+   SERVICE WORKER
+════════════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(r => console.log('[SW] registered', r.scope))
+    .catch(e => console.warn('[SW] failed', e));
+}
+
+/* ════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════ */
+load();
+document.getElementById('seasonPill').textContent = S.seasonName;
+renderStandings(); // default page is jedwali
+updateStats();
+</script>
+</body>
+</html>
